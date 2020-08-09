@@ -3,14 +3,16 @@ package com.thoughtworks.rslist.service;
 import com.thoughtworks.rslist.domain.Trade;
 import com.thoughtworks.rslist.domain.Vote;
 import com.thoughtworks.rslist.dto.RsEventDto;
+import com.thoughtworks.rslist.dto.TradeDto;
 import com.thoughtworks.rslist.dto.UserDto;
 import com.thoughtworks.rslist.dto.VoteDto;
 import com.thoughtworks.rslist.repository.RsEventRepository;
+import com.thoughtworks.rslist.repository.TradeRepository;
 import com.thoughtworks.rslist.repository.UserRepository;
 import com.thoughtworks.rslist.repository.VoteRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.OneToOne;
 import java.util.Optional;
 
 @Service
@@ -18,11 +20,16 @@ public class RsService {
   final RsEventRepository rsEventRepository;
   final UserRepository userRepository;
   final VoteRepository voteRepository;
+  final TradeRepository tradeRepository;
 
-  public RsService(RsEventRepository rsEventRepository, UserRepository userRepository, VoteRepository voteRepository) {
+  public RsService(RsEventRepository rsEventRepository,
+                   UserRepository userRepository,
+                   VoteRepository voteRepository,
+                   TradeRepository tradeRepository) {
     this.rsEventRepository = rsEventRepository;
     this.userRepository = userRepository;
     this.voteRepository = voteRepository;
+    this.tradeRepository = tradeRepository;
   }
 
   public void vote(Vote vote, int rsEventId) {
@@ -50,6 +57,22 @@ public class RsService {
   }
 
   public void buy(Trade trade, int id) {
+    Optional<RsEventDto> rsEvent = rsEventRepository.findById(id);
 
+    if (! rsEvent.isPresent()){
+      throw new RuntimeException();
+    }
+    TradeDto tradeDto = tradeRepository.findByRank(trade.getRank());
+    if (tradeDto == null){
+      TradeDto newTrade = TradeDto.builder()
+              .amount(trade.getAmount())
+              .rank(trade.getRank()).build();
+      tradeRepository.save(newTrade);
+    }else if (tradeDto.getAmount() < trade.getAmount()){
+      tradeDto.setAmount(trade.getAmount());
+      tradeDto.setRank(trade.getRank());
+      tradeRepository.save(tradeDto);
+    }
+    tradeRepository.save(tradeDto);
   }
 }
