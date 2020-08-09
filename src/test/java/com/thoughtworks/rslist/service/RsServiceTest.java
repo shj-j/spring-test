@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
@@ -85,16 +86,18 @@ class RsServiceTest {
   void shouldBuySuccess(){
     //Given
     UserDto userDto = UserDto.builder()
-            .userName("name 1")
-            .gender("female")
-            .age(20)
-            .email("name1@g.com")
-            .phone("11234567890")
             .voteNum(5)
+            .phone("18888888888")
+            .gender("female")
+            .email("a@b.com")
+            .age(19)
+            .userName("xiaoli")
+            .id(2)
             .build();
     Integer userDtoId = userDto.getId();
     RsEventDto rsEventDto = RsEventDto.builder()
-            .eventName("event 0")
+            .eventName("event name")
+            .id(1)
             .keyword("keyword")
             .voteNum(2)
             .user(userDto)
@@ -109,17 +112,62 @@ class RsServiceTest {
             .build();
 
     TradeDto tradeDto = TradeDto.builder()
-            .amount(100)
+            .amount(80)
             .rank(1)
             .build();
+    when(tradeRepository.findByRank(1)).thenReturn(tradeDto);
 
     //When
     rsService.buy(trade, eventId);
 
     //Then
-    verify(tradeRepository).save(tradeDto);
+    assertEquals(100,tradeDto.getAmount());
 
   }
+  
+  @Test
+  void shouldGive400IfAmountNotEnough(){
+    //Given
+    UserDto userDto = UserDto.builder()
+            .voteNum(5)
+            .phone("18888888888")
+            .gender("female")
+            .email("a@b.com")
+            .age(19)
+            .userName("xiaoli")
+            .id(2)
+            .build();
+    Integer userDtoId = userDto.getId();
+    RsEventDto rsEventDto = RsEventDto.builder()
+            .eventName("event name")
+            .id(1)
+            .keyword("keyword")
+            .voteNum(2)
+            .user(userDto)
+            .build();
+    Integer eventId = rsEventDto.getId();
+
+    when(rsEventRepository.findById(anyInt())).thenReturn(Optional.of(rsEventDto));
+
+    Trade trade = Trade.builder()
+            .amount(100)
+            .rank(1)
+            .build();
+
+    TradeDto tradeDto = TradeDto.builder()
+            .amount(200)
+            .rank(1)
+            .build();
+    when(tradeRepository.findByRank(1)).thenReturn(tradeDto);
+
+    //When
+    rsService.buy(trade, eventId);
+
+    //Then
+    assertEquals(200,tradeDto.getAmount());
+
+  }
+
   @Test
   void shouldThrowExceptionWhenUserNotExist() {
     // given
