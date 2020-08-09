@@ -124,7 +124,7 @@ class RsServiceTest {
     assertEquals(100,tradeDto.getAmount());
 
   }
-  
+
   @Test
   void shouldGive400IfAmountNotEnough(){
     //Given

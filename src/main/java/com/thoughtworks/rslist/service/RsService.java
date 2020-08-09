@@ -6,6 +6,7 @@ import com.thoughtworks.rslist.dto.RsEventDto;
 import com.thoughtworks.rslist.dto.TradeDto;
 import com.thoughtworks.rslist.dto.UserDto;
 import com.thoughtworks.rslist.dto.VoteDto;
+import com.thoughtworks.rslist.exception.RequestNotValidException;
 import com.thoughtworks.rslist.repository.RsEventRepository;
 import com.thoughtworks.rslist.repository.TradeRepository;
 import com.thoughtworks.rslist.repository.UserRepository;
@@ -60,7 +61,7 @@ public class RsService {
     Optional<RsEventDto> rsEvent = rsEventRepository.findById(id);
 
     if (! rsEvent.isPresent()){
-      throw new RuntimeException();
+      throw new RuntimeException("400");
     }
     TradeDto tradeDto = tradeRepository.findByRank(trade.getRank());
     if (tradeDto == null){
@@ -72,7 +73,9 @@ public class RsService {
       tradeDto.setAmount(trade.getAmount());
       tradeDto.setRank(trade.getRank());
       tradeRepository.save(tradeDto);
+    }else{
+      throw new RequestNotValidException("Sorry! The amount is not enough !");
     }
-    tradeRepository.save(tradeDto);
   }
+
 }

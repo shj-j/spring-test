@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -37,7 +38,7 @@ public class RsController {
   public ResponseEntity<List<RsEvent>> getRsEventListBetween(
       @RequestParam(required = false) Integer start, @RequestParam(required = false) Integer end) {
     List<RsEvent> rsEvents =
-        rsEventRepository.findAll().stream()
+        rsEventRepository.findAll().stream().sorted((a,b)-> b.getVoteNum() -a.getVoteNum())
             .map(
                 item ->
                     RsEvent.builder()
@@ -56,7 +57,7 @@ public class RsController {
   @GetMapping("/rs/{index}")
   public ResponseEntity<RsEvent> getRsEvent(@PathVariable int index) {
     List<RsEvent> rsEvents =
-        rsEventRepository.findAll().stream()
+        rsEventRepository.findAll().stream().sorted((a,b)-> b.getVoteNum() -a.getVoteNum())
             .map(
                 item ->
                     RsEvent.builder()
